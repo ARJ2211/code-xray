@@ -7,8 +7,13 @@ name = "code-xray"
 version = "0.1.0"
 description = "Terminal-based code explainer using local LLMs"
 authors = [{ name = "Your Name", email = "you@example.com" }]
-dependencies = ["typer", "textual", "rich"]
 requires-python = ">=3.8"
+dependencies = [
+    "typer",
+    "textual",
+    "rich",
+    "httpx"
+]
 
 [project.scripts]
 code-xray = "code_xray.__main__:app"
