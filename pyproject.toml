@@ -1,0 +1,20 @@
+[build-system]
+requires = ["setuptools", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "code-xray"
+version = "0.1.0"
+description = "Terminal-based code explainer using local LLMs"
+authors = [{ name = "Your Name", email = "you@example.com" }]
+dependencies = ["typer", "textual", "rich"]
+requires-python = ">=3.8"
+
+[project.scripts]
+code-xray = "code_xray.__main__:app"
+
+[tool.setuptools]
+packages = ["code_xray"]
+
+[tool.setuptools.package-data]
+# optionally include other files if needed
