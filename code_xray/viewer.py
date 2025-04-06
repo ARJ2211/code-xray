@@ -1,10 +1,38 @@
+import httpx
+
+from textual.screen import Screen
 from textual.app import App, ComposeResult
-from textual.widgets import Header, Footer, Static
-from textual.containers import VerticalScroll
+from textual.widgets import Header, Footer, Static, RichLog
+from textual.containers import VerticalScroll, Vertical
 from textual.reactive import reactive
 from rich.text import Text
 from rich.syntax import Syntax
 from pathlib import Path
+
+class ExplanationScreen(Screen):
+    BINDINGS = [
+        ("q", "pop_screen", "Close"),
+        ("escape", "pop_screen", "Close"),
+    ]
+
+    def __init__(self, initial_text: str = "Loading explanation..."):
+        super().__init__()
+        self.initial_text = initial_text
+        self.rich_log = RichLog(highlight=True, markup=True, wrap=True)
+
+    def compose(self) -> ComposeResult:
+        self.rich_log.write(f"[yellow]{self.initial_text}[/yellow]\n")
+        self.rich_log.write("[dim]Press Q or Esc to close[/dim]\n")
+        yield Vertical(self.rich_log)
+
+    def action_pop_screen(self):
+        self.app.pop_screen()
+
+    def update_text(self, new_text: str):
+        self.rich_log.clear()
+        self.rich_log.write("[dim]Press Q or Esc to close[/dim]\n")
+        self.rich_log.write(new_text)
+
 
 class Line(Static):
     def __init__(self, number: int, content: str, language: str = "python"):
@@ -36,6 +64,7 @@ class CodeViewerApp(App):
         ("down", "cursor_down", "Move Down"),
         ("shift+up", "select_up", "Select Up"),
         ("shift+down", "select_down", "Select Down"),
+        ("e", "explain", "Explain Code"),
     ]
 
     current_line = reactive(0)
@@ -91,3 +120,44 @@ class CodeViewerApp(App):
         if self.current_line < len(self.code_lines) - 1:
             self.current_line += 1
             self.highlight_lines()
+    
+    def action_explain(self):
+        self.explanation_screen = ExplanationScreen()
+        self.push_screen(self.explanation_screen)
+        # Get selected range
+        low = min(self.selection_start, self.current_line)
+        high = max(self.selection_start, self.current_line)
+
+        selected_code = "\n".join(self.code_lines[low : high + 1])
+        full_context = "\n".join(self.code_lines)
+
+        prompt = f"""Explain the following code block in simple terms. 
+            This is the full file for context:
+
+            {full_context}
+
+            Now explain only these lines:
+
+            {selected_code}
+        """
+
+        self.run_worker(self.send_to_ollama(prompt), exclusive=True)
+    
+    async def send_to_ollama(self, prompt: str):
+        try:
+            async with httpx.AsyncClient() as client:
+                response = await client.post(
+                    "http://localhost:11434/api/generate",
+                    json={"model": "mistral", "prompt": prompt, "stream": False},
+                    timeout=30
+                )
+                result = response.json()
+                explanation = result.get("response", "").strip()
+                await self.show_explanation_popup(explanation)
+        except Exception as e:
+            await self.show_explanation_popup(f"[error] Failed to connect to Ollama:\n{e}")
+
+    async def show_explanation_popup(self, text: str):
+        await self.push_screen(ExplanationScreen(text))
+
+
