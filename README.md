@@ -3,6 +3,8 @@
 `code-xray` is a terminal-based code exploration and explanation tool powered by local LLMs (like Ollama).  
 Select lines of code interactively, send them for explanation, and get human-friendly insights – right in your terminal.
 
+<img src="assets/detail.gif" alt="Demo" width="600" height="400" />
+
 ---
 
 ## ✨ Features
