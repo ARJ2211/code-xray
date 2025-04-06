@@ -74,10 +74,12 @@ class CodeViewerApp(App):
     current_line = var(0)
     selection_start = var(0)
 
-    def __init__(self, file_path: Path):
+    def __init__(self, file_path: Path, model: str, port: int):
         super().__init__()
         self.title = "Code X-Ray"
         self.file_path = file_path
+        self.model = model
+        self.port = port
         self.code_lines = file_path.read_text().splitlines()
         self.language = file_path.suffix.lstrip(".") or "python"
         self.container = VerticalScroll()
