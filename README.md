@@ -7,7 +7,9 @@
 `code-xray` is a terminal-based code exploration and explanation tool powered by local LLMs (like Ollama).  
 Select lines of code interactively, send them for explanation, and get human-friendly insights – right in your terminal.
 
-<img src="assets/detail.gif" alt="Demo" width="600" height="400" />
+<p align="center">
+  <img src="assets/detail.gif" alt="Demo" width="600" height="400" />
+</p>
 
 ---
 
@@ -15,16 +17,27 @@ Select lines of code interactively, send them for explanation, and get human-fri
 
 - ✅ Terminal-based file viewer with syntax highlighting
 - ✅ Line-by-line navigation and selection
+- ✅ Interactive directory tree when run without arguments
 - ✅ Integration with local LLMs via [Ollama](https://ollama.com)
 - ✅ On-demand code explanation using selected lines and full-file context
 - ✅ Works fully offline
+- ✅ Switch between file viewer and file tree (`b` to go back)
 - ✅ Customizable LLM model and port via CLI
 
 ---
 
 ## 🚀 Usage
 
-### 1. Basic Command
+### 1. Launch without arguments
+
+```bash
+code-xray
+```
+
+This opens a **directory tree** starting from your current working directory.  
+You can navigate folders and open files for explanation. Press `b` inside a viewer to return to the file tree.
+
+### 2. Launch with a file directly
 
 ```bash
 code-xray /path/to/your/file.py
@@ -32,7 +45,7 @@ code-xray /path/to/your/file.py
 
 This opens an interactive terminal interface to browse and explain code.
 
-### 2. With Custom Model and Port
+### 3. Launch with custom model and port
 
 ```bash
 code-xray /path/to/your/file.py --model mistral --port 11434
@@ -45,22 +58,25 @@ code-xray /path/to/your/file.py --model mistral --port 11434
 
 ## 🧭 Keybindings
 
-| Key       | Action                  |
-| --------- | ----------------------- |
-| `h`       | Move up one line        |
-| `l`       | Move down one line      |
-| `Shift+h` | Expand selection up     |
-| `Shift+l` | Expand selection down   |
-| `e`       | Explain selected code   |
-| `q`       | Quit viewer or popup    |
-| `Esc`     | Close explanation popup |
+| Key       | Action                       |
+| --------- | ---------------------------- |
+| `h`       | Move up one line             |
+| `l`       | Move down one line           |
+| `Shift+h` | Expand selection up          |
+| `Shift+l` | Expand selection down        |
+| `e`       | Explain selected code        |
+| `b`       | Go back to file tree         |
+| `q`       | Quit viewer or popup         |
+| `Esc`     | Close explanation popup      |
+| `Enter`   | Select file or enter folder  |
+| `../`     | Navigate up in the file tree |
 
 ---
 
 ## 🛠 Requirements
 
 - Python 3.10+
-- [Ollama](https://ollama.com) running locally with desired model pulled
+- [Ollama](https://ollama.com) running locally with your preferred model
 
 Example to pull a model:
 
@@ -68,7 +84,7 @@ Example to pull a model:
 ollama pull mistral
 ```
 
-Then ensure it's running:
+Then start the server:
 
 ```bash
 ollama serve
