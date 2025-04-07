@@ -75,24 +75,10 @@ ollama serve
 ## 🧩 Installation
 
 ```bash
-git clone https://github.com/yourusername/code-xray.git
-cd code-xray
-pip install -e .
+pip install code-xray
 ```
 
 > Make sure `code-xray` is available in your PATH or create an alias.
-
----
-
-## 🤖 Example Output
-
-![Demo Screenshot](assets/demo.png)
-
----
-
-## 📄 License
-
-MIT License © 2024 Aayush Rajesh Jadhav
 
 ---
 
