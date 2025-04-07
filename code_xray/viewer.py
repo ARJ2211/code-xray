@@ -32,12 +32,11 @@ class ExplanationScreen(Screen):
 
     def update_text(self, new_text: str):
         self.rich_log.clear()
-        self.rich_log.write("[dim]Press Q or Esc to close[/dim]\n")
         self.rich_log.write(new_text)
         self.rich_log.scroll_home(animate=False)
 
     def append_text(self, new_token: str):
-        self.rich_log.write(new_token, scroll_end=True)  # 👈 stream-friendly
+        self.rich_log.write(new_token, scroll_end=True) 
         self.refresh()
 
     def action_close(self):
@@ -181,30 +180,37 @@ class CodeViewerApp(App):
                 )
 
                 buffer = ""
+                display = ""
                 last_update = asyncio.get_event_loop().time()
+
+                if self.explanation_screen:
+                    self.explanation_screen.update_text("[dim]Press Q or Esc to close[/dim]\n\n")
 
                 async for line in response.aiter_lines():
                     if not line.strip():
                         continue
+
                     try:
                         data = json.loads(line)
                     except Exception:
                         continue
 
-                    delta = data.get("response", "")
-                    buffer += delta
+                    buffer += data.get("response", "")
 
+                    # Flush buffer every few ms
                     now = asyncio.get_event_loop().time()
-                    if now - last_update > 0.1:
+                    if now - last_update > 0.02:  # 20ms
+                        display += buffer
+                        buffer = ""
                         if self.explanation_screen:
-                            self.explanation_screen.set_stream_buffer(buffer)
+                            self.explanation_screen.update_text("[dim]Press Q or Esc to close[/dim]\n\n" + display)
                         last_update = now
 
-                # final flush
+                # Final flush
+                display += buffer
                 if self.explanation_screen:
-                    self.explanation_screen.set_stream_buffer(buffer)
+                    self.explanation_screen.update_text("[dim]Press Q or Esc to close[/dim]\n\n" + display)
 
         except Exception as e:
             if self.explanation_screen:
                 self.explanation_screen.update_text(f"[red]Error:[/red] {e}")
-
