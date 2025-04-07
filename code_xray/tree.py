@@ -7,6 +7,12 @@ from pathlib import Path
 from code_xray.viewer import CodeViewerApp
 
 class FilePickerApp(App):
+    CSS = """
+    VerticalScroll {
+        overflow: auto;
+        height: 1fr;
+    }
+    """
 
     BINDINGS = [("q", "quit", "Quit the tree viewer")]
 
@@ -65,6 +71,13 @@ class FilePickerApp(App):
         self.exit(None)
 
 def launch_directory_tree(model: str = "mistral", port: int = 11434):
-    selected_path = FilePickerApp(model=model, port=port).run()
-    if selected_path:
-        CodeViewerApp(file_path=selected_path, model=model, port=port).run()
+    while True:
+        selected_path = FilePickerApp(model=model, port=port).run()
+        if selected_path:
+            result = CodeViewerApp(file_path=selected_path, model=model, port=port).run()
+            if result is None:
+                continue  # go back to the tree
+            else:
+                break  # future use case: return something or exit
+        else:
+            break  # user pressed 'q' in tree viewer

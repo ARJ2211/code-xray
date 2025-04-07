@@ -66,9 +66,10 @@ class CodeViewerApp(App):
         Binding("q", "quit", "Quit"),
         Binding("h", "cursor_up", "Move Up"),
         Binding("l", "cursor_down", "Move Down"),
-        Binding("H", "select_up", "Shift+H to select up", show=True),  # Capital H for Shift+H
-        Binding("L", "select_down", "Shift+L to select down", show=True),  # Capital L for Shift+L
+        Binding("H", "select_up", "Shift+H to select up", show=True),
+        Binding("L", "select_down", "Shift+L to select down", show=True),
         Binding("e", "explain", "Explain Code"),
+        Binding("b", "back_to_tree", "Back to Tree"),  # NEW
     ]
 
     current_line = var(0)
@@ -84,7 +85,7 @@ class CodeViewerApp(App):
         self.language = file_path.suffix.lstrip(".") or "python"
         self.container = VerticalScroll()
         self.line_widgets = []
-        self.explanation_screen = None  # will be created fresh each time
+        self.explanation_screen = None
 
     def compose(self) -> ComposeResult:
         yield Header(show_clock=True)
@@ -131,7 +132,6 @@ class CodeViewerApp(App):
             self.highlight_lines()
 
     def action_explain(self):
-        # Always create a new screen instance to ensure fresh state
         self.explanation_screen = ExplanationScreen()
 
         low = min(self.selection_start, self.current_line)
@@ -160,8 +160,8 @@ class CodeViewerApp(App):
         try:
             async with httpx.AsyncClient() as client:
                 response = await client.post(
-                    "http://localhost:11434/api/generate",
-                    json={"model": "mistral", "prompt": prompt, "stream": False},
+                    f"http://localhost:{self.port}/api/generate",
+                    json={"model": self.model, "prompt": prompt, "stream": False},
                     timeout=30
                 )
                 result = response.json()
@@ -172,3 +172,6 @@ class CodeViewerApp(App):
         except Exception as e:
             if self.explanation_screen:
                 self.explanation_screen.update_text(f"[red]Error:[/red] {e}")
+
+    def action_back_to_tree(self):
+        self.exit(None)
