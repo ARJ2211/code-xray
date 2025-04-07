@@ -1,6 +1,4 @@
-<p align="center">
-  <img src="https://raw.githubusercontent.com/ARJ2211/code-xray/main/assets/code-xray.png" width="60" alt="code-xray logo"/>
-</p>
+![code-xray](https://github.com/user-attachments/assets/620738dd-8dfc-4fec-abf3-a2259ba090c7)
 
 # 🧠 code-xray
 
