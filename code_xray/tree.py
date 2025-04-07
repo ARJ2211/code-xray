@@ -18,6 +18,7 @@ class FilePickerApp(App):
 
     def __init__(self, model: str, port: int):
         super().__init__()
+        self.title = 'code-xray'
         self.model = model
         self.port = port
         self.tree_widget = None  # Will be assigned in compose()
