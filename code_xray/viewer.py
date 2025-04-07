@@ -1,3 +1,4 @@
+import json
 import httpx
 import asyncio
 from pathlib import Path
@@ -24,15 +25,25 @@ class ExplanationScreen(Screen):
     def compose(self) -> ComposeResult:
         yield Vertical(self.rich_log)
 
+    def set_stream_buffer(self, text: str):
+        self.rich_log.clear()
+        self.rich_log.write("[dim]Press Q or Esc to close[/dim]\n\n")
+        self.rich_log.write(text, scroll_end=True)
+
     def update_text(self, new_text: str):
         self.rich_log.clear()
         self.rich_log.write("[dim]Press Q or Esc to close[/dim]\n")
         self.rich_log.write(new_text)
         self.rich_log.scroll_home(animate=False)
 
+    def append_text(self, new_token: str):
+        self.rich_log.write(new_token, scroll_end=True)  # 👈 stream-friendly
+        self.refresh()
+
     def action_close(self):
         self.app.pop_screen()
         self.app.set_focus(None)
+
 
 
 class Line(Static):
@@ -130,6 +141,10 @@ class CodeViewerApp(App):
         if self.current_line < len(self.code_lines) - 1:
             self.current_line += 1
             self.highlight_lines()
+    
+
+    def action_back_to_tree(self):
+        self.exit(None)
 
     def action_explain(self):
         self.explanation_screen = ExplanationScreen()
@@ -161,17 +176,35 @@ class CodeViewerApp(App):
             async with httpx.AsyncClient() as client:
                 response = await client.post(
                     f"http://localhost:{self.port}/api/generate",
-                    json={"model": self.model, "prompt": prompt, "stream": False},
-                    timeout=30
+                    json={"model": self.model, "prompt": prompt, "stream": True},
+                    timeout=None
                 )
-                result = response.json()
-                text = result.get("response", "").strip() or "[red]No explanation received.[/red]"
-                await asyncio.sleep(0.1)
+
+                buffer = ""
+                last_update = asyncio.get_event_loop().time()
+
+                async for line in response.aiter_lines():
+                    if not line.strip():
+                        continue
+                    try:
+                        data = json.loads(line)
+                    except Exception:
+                        continue
+
+                    delta = data.get("response", "")
+                    buffer += delta
+
+                    now = asyncio.get_event_loop().time()
+                    if now - last_update > 0.1:
+                        if self.explanation_screen:
+                            self.explanation_screen.set_stream_buffer(buffer)
+                        last_update = now
+
+                # final flush
                 if self.explanation_screen:
-                    self.explanation_screen.update_text(text)
+                    self.explanation_screen.set_stream_buffer(buffer)
+
         except Exception as e:
             if self.explanation_screen:
                 self.explanation_screen.update_text(f"[red]Error:[/red] {e}")
 
-    def action_back_to_tree(self):
-        self.exit(None)

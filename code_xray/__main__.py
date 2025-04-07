@@ -18,22 +18,27 @@ def view(
         typer.echo(f"[Error] File not found: {file}")
         raise typer.Exit(1)
 
-    CodeViewerApp(file_path=file, model=model, port=port).run()
+    result = CodeViewerApp(file_path=file, model=model, port=port).run()
+    if result is None:
+        # User hit 'b' → go to file tree
+        launch_directory_tree(model=model, port=port)
 
 @app.callback(invoke_without_command=True)
 def main(
     ctx: typer.Context,
-    file: Path = typer.Argument(None, help="Path to a source code file."),
-    model: str = typer.Option("mistral", "--model", "-m", help="Ollama model to use"),
-    port: int = typer.Option(11434, "--port", "-p", help="Port where Ollama is running"),
+    file: Path = typer.Argument(None),
+    model: str = typer.Option("mistral", "--model", "-m"),
+    port: int = typer.Option(11434, "--port", "-p"),
 ):
-    """Launch file viewer if file is given, or open directory tree if not."""
+    """Launch file viewer or file tree depending on input."""
     if ctx.invoked_subcommand is None:
         if file:
             if not file.exists():
                 typer.echo(f"[Error] File not found: {file}")
                 raise typer.Exit(1)
-            CodeViewerApp(file_path=file, model=model, port=port).run()
+            result = CodeViewerApp(file_path=file, model=model, port=port).run()
+            if result is None:
+                launch_directory_tree(model=model, port=port)
         else:
             launch_directory_tree(model=model, port=port)
 

@@ -30,6 +30,9 @@ class FilePickerApp(App):
         yield Footer()
 
     def populate_tree(self, node, path: Path):
+        # Dynamically update the label at the top
+        node.label = f"🌳 Current Dir: {path}"
+
         try:
             if path.parent != path:
                 up_node = node.add("🔙 ../", data=path.parent)
@@ -57,15 +60,13 @@ class FilePickerApp(App):
             if path.is_file():
                 self.exit(path)
             elif path.is_dir():
-                # Correct way to clear children
+                # Clear current tree view
                 for child in list(self.tree_widget.root.children):
                     child.remove()
-                
-                # Repopulate new contents
+
+                # Update label and populate contents
                 self.populate_tree(self.tree_widget.root, path)
                 self.tree_widget.root.expand()
-
-
 
     def action_quit(self):
         self.exit(None)
@@ -78,6 +79,6 @@ def launch_directory_tree(model: str = "mistral", port: int = 11434):
             if result is None:
                 continue  # go back to the tree
             else:
-                break  # future use case: return something or exit
+                break  # viewer exited with return value
         else:
             break  # user pressed 'q' in tree viewer
