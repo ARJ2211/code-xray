@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="https://raw.githubusercontent.com/ARJ2211/code-xray/main/assets/code-xray.png" width="60" alt="code-xray logo"/>
+</p>
+
 # 🧠 code-xray
 
 `code-xray` is a terminal-based code exploration and explanation tool powered by local LLMs (like Ollama).  
